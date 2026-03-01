@@ -1,7 +1,6 @@
 import streamlit as st
 import os
 import subprocess
-import uuid
 
 WORKSPACE = "."  # Current directory, change if needed
 
@@ -52,22 +51,16 @@ with st.expander(f"Edit Test File: {test_file}", expanded=False):
 
 # --- Create new files ---
 st.header("Create New File")
-file_type = st.radio("File type:", ["Function", "Test"], horizontal=True)
-if file_type == "Function":
-    file_suffix = "_func.cpp"
-else:
-    file_suffix = "_test.cpp"
-new_file_name = st.text_input("New file name (without extension):")
+new_file_name = st.text_input("New file name (with .cpp extension):")
 new_file_content = st.text_area("New file content", "", height=100)
 if st.button("Create File"):
-    if new_file_name:
-        full_file_name = new_file_name + file_suffix
-        with open(full_file_name, "w", encoding="utf-8") as f:
+    if new_file_name and new_file_name.endswith(".cpp"):
+        with open(new_file_name, "w", encoding="utf-8") as f:
             f.write(new_file_content)
-        st.success(f"Created {full_file_name}")
+        st.success(f"Created {new_file_name}")
         st.experimental_rerun()
     else:
-        st.error("Please enter a valid file name.")
+        st.error("Please enter a valid .cpp file name.")
 
 # --- Upload and Run C++ Test ---
 st.header("Upload and Run C++ Test")
@@ -80,23 +73,20 @@ existing_test = st.selectbox("Select existing test file:", ["(None)"] + test_fil
 
 if st.button("Compile and Run Test"):
     # Priority: uploaded files > selected files
-    use_uploaded = func_file_upload is not None and test_file_upload is not None
+    use_uploaded = func_file_upload and test_file_upload
     use_existing = existing_func != "(None)" and existing_test != "(None)"
-    unique_id = str(uuid.uuid4())
     if use_uploaded:
-        func_bytes = func_file_upload.getvalue()
-        test_bytes = test_file_upload.getvalue()
-        func_path = f"uploaded_func_{unique_id}.cpp"
-        test_path = f"uploaded_test_{unique_id}.cpp"
-        exe_path = f"test_binary_{unique_id}"
+        func_path = "uploaded_func.cpp"
+        test_path = "uploaded_test.cpp"
+        exe_path = "test_binary"
         with open(func_path, "wb") as f:
-            f.write(func_bytes)
+            f.write(func_file_upload.read())
         with open(test_path, "wb") as f:
-            f.write(test_bytes)
+            f.write(test_file_upload.read())
     elif use_existing:
         func_path = existing_func
         test_path = existing_test
-        exe_path = f"test_binary_{unique_id}"
+        exe_path = "test_binary"
     else:
         st.warning("Please upload or select both a function file and a test file.")
         st.stop()
@@ -114,7 +104,7 @@ if st.button("Compile and Run Test"):
     finally:
         # Only remove temp files if they were created
         if use_uploaded:
-            for path in [func_path, test_path, exe_path]:
+            for path in ["uploaded_func.cpp", "uploaded_test.cpp", exe_path]:
                 if os.path.exists(path):
                     os.remove(path)
         elif use_existing:
