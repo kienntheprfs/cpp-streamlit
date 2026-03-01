@@ -1,6 +1,7 @@
 import streamlit as st
 import os
 import subprocess
+import uuid
 
 WORKSPACE = "."  # Current directory, change if needed
 
@@ -75,10 +76,11 @@ if st.button("Compile and Run Test"):
     # Priority: uploaded files > selected files
     use_uploaded = func_file_upload and test_file_upload
     use_existing = existing_func != "(None)" and existing_test != "(None)"
+    unique_id = str(uuid.uuid4())
     if use_uploaded:
-        func_path = "uploaded_func.cpp"
-        test_path = "uploaded_test.cpp"
-        exe_path = "test_binary"
+        func_path = f"uploaded_func_{unique_id}.cpp"
+        test_path = f"uploaded_test_{unique_id}.cpp"
+        exe_path = f"test_binary_{unique_id}"
         with open(func_path, "wb") as f:
             f.write(func_file_upload.read())
         with open(test_path, "wb") as f:
@@ -86,7 +88,7 @@ if st.button("Compile and Run Test"):
     elif use_existing:
         func_path = existing_func
         test_path = existing_test
-        exe_path = "test_binary"
+        exe_path = f"test_binary_{unique_id}"
     else:
         st.warning("Please upload or select both a function file and a test file.")
         st.stop()
@@ -104,7 +106,7 @@ if st.button("Compile and Run Test"):
     finally:
         # Only remove temp files if they were created
         if use_uploaded:
-            for path in ["uploaded_func.cpp", "uploaded_test.cpp", exe_path]:
+            for path in [func_path, test_path, exe_path]:
                 if os.path.exists(path):
                     os.remove(path)
         elif use_existing:
