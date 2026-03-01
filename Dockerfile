@@ -11,8 +11,10 @@ RUN apt-get update \
     && rm -rf /var/lib/apt/lists/*
 
 # (Optional) Create a non-root user for better security
-RUN useradd -m appuser
-USER appuser
+# RUN useradd -m appuser
+# Tạo user và cấp quyền ghi cho /workspace
+# RUN useradd -m appuser && chown -R appuser /workspace
+# USER appuser
 
 # Expose port for Streamlit
 EXPOSE 8501
