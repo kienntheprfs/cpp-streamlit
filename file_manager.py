@@ -52,16 +52,22 @@ with st.expander(f"Edit Test File: {test_file}", expanded=False):
 
 # --- Create new files ---
 st.header("Create New File")
-new_file_name = st.text_input("New file name (with .cpp extension):")
+file_type = st.radio("File type:", ["Function", "Test"], horizontal=True)
+if file_type == "Function":
+    file_suffix = "_func.cpp"
+else:
+    file_suffix = "_test.cpp"
+new_file_name = st.text_input("New file name (without extension):")
 new_file_content = st.text_area("New file content", "", height=100)
 if st.button("Create File"):
-    if new_file_name and new_file_name.endswith(".cpp"):
-        with open(new_file_name, "w", encoding="utf-8") as f:
+    if new_file_name:
+        full_file_name = new_file_name + file_suffix
+        with open(full_file_name, "w", encoding="utf-8") as f:
             f.write(new_file_content)
-        st.success(f"Created {new_file_name}")
+        st.success(f"Created {full_file_name}")
         st.experimental_rerun()
     else:
-        st.error("Please enter a valid .cpp file name.")
+        st.error("Please enter a valid file name.")
 
 # --- Upload and Run C++ Test ---
 st.header("Upload and Run C++ Test")
@@ -74,17 +80,19 @@ existing_test = st.selectbox("Select existing test file:", ["(None)"] + test_fil
 
 if st.button("Compile and Run Test"):
     # Priority: uploaded files > selected files
-    use_uploaded = func_file_upload and test_file_upload
+    use_uploaded = func_file_upload is not None and test_file_upload is not None
     use_existing = existing_func != "(None)" and existing_test != "(None)"
     unique_id = str(uuid.uuid4())
     if use_uploaded:
+        func_bytes = func_file_upload.getvalue()
+        test_bytes = test_file_upload.getvalue()
         func_path = f"uploaded_func_{unique_id}.cpp"
         test_path = f"uploaded_test_{unique_id}.cpp"
         exe_path = f"test_binary_{unique_id}"
         with open(func_path, "wb") as f:
-            f.write(func_file_upload.read())
+            f.write(func_bytes)
         with open(test_path, "wb") as f:
-            f.write(test_file_upload.read())
+            f.write(test_bytes)
     elif use_existing:
         func_path = existing_func
         test_path = existing_test
