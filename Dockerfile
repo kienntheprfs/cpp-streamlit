@@ -22,8 +22,4 @@ EXPOSE 8501
 # Copy the Streamlit app into the image
 COPY file_manager.py .
 
-CMD ["streamlit", "run", "file_manager.py",
-     "--server.address=0.0.0.0",
-     "--server.maxUploadSize=500",
-     "--server.enableCORS=false",
-     "--server.enableXsrfProtection=false"]
+CMD ["streamlit", "run", "file_manager.py", "--server.address=0.0.0.0", "--server.maxUploadSize=500", "--server.enableCORS=false", "--server.enableXsrfProtection=false"]
