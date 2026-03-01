@@ -11,13 +11,19 @@ RUN apt-get update \
     && rm -rf /var/lib/apt/lists/*
 
 # 🔥 Fix permission cho OpenShift
-RUN chgrp -R 0 /workspace && \
-    chmod -R g+rwX /workspace
+RUN mkdir -p /workspace/.streamlit \
+    && chgrp -R 0 /workspace \
+    && chmod -R g+rwX /workspace
+
+ENV STREAMLIT_HOME=/workspace/.streamlit
 
 EXPOSE 8501
 
 # Copy the Streamlit app into the image
 COPY file_manager.py .
 
-# Default command runs Streamlit app
-CMD ["streamlit", "run", "file_manager.py", "--server.address=0.0.0.0"]
+CMD ["streamlit", "run", "file_manager.py",
+     "--server.address=0.0.0.0",
+     "--server.maxUploadSize=500",
+     "--server.enableCORS=false",
+     "--server.enableXsrfProtection=false"]
