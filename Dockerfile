@@ -10,13 +10,10 @@ RUN apt-get update \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
-# (Optional) Create a non-root user for better security
-# RUN useradd -m appuser
-# Tạo user và cấp quyền ghi cho /workspace
-# RUN useradd -m appuser && chown -R appuser /workspace
-# USER appuser
+# 🔥 Fix permission cho OpenShift
+RUN chgrp -R 0 /workspace && \
+    chmod -R g+rwX /workspace
 
-# Expose port for Streamlit
 EXPOSE 8501
 
 # Copy the Streamlit app into the image
